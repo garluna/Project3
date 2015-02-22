@@ -3,31 +3,38 @@
 
 #include "GraphObject.h"
 
-// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
-//base, player, Wall declarations
+class StudentWorld;
 
+// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class Actor
 	: public GraphObject
 {
 public:
-	Actor();
+	Actor(int imgID, int x, int y, StudentWorld* world);
 	virtual ~Actor();
-	virtual doSomething() = 0;
+	virtual void doSomething() = 0;
+	StudentWorld* getWorld();
+private:
+	StudentWorld* myWorld;
 };
 
 class Wall
+	: public Actor
 {
 public:
-	Wall();
+	Wall(int imgID, int x, int y, StudentWorld* world);
 	virtual ~Wall();
+	virtual void doSomething(); //empty body
 };
 
 class Player
+	: public Actor
 {
 public:
-	Player();
+	Player(int imgID, int x, int y, StudentWorld* world);
 	virtual ~Player();
-	virtual doSomething();
+	virtual void doSomething();
+private:
 };
 
 #endif // ACTOR_H_
