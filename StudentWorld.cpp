@@ -3,6 +3,7 @@
 using namespace std;
 
 //#include "Level.h"
+#include <iomanip>
 #include <sstream>
 
 GameWorld* createStudentWorld(string assetDir)
@@ -20,7 +21,21 @@ int StudentWorld::move()
 {
 	// This code is here merely to allow the game to build, run, and terminate after hitting enter a few times 
 	currentPlayer->doSomething();
-	decLives();
+	for (int i = 0; i < actors.size(); i++)
+	{
+		if (actors[i]->isAlive())
+		{
+			actors[i]->doSomething();
+		}
+	}
+	/*int count = 0;  //CHECK - use iterator???
+	for (int i = 0; i < actors.size(); i++)
+	{
+		if (!(actors[i]->isAlive()))
+		{
+			actors[i] = actors[actors.size() - 1];
+		}
+	}*/
 	return GWSTATUS_CONTINUE_GAME;
 	/*
  // Give each actor a chance to do something
@@ -63,24 +78,41 @@ return GWSTATUS_CONTINUE_GAME;
 
 void StudentWorld::cleanUp()
 {
+	delete currentPlayer;   //CHECK - deleting pointer or memory at pointer as well or don't have to at all?
+	/*vector<Actor*>::iterator it;
+	it = actors.begin();*/ 
+	/*for (int i = 0; i < actors.size(); i++)
+	{
+		Actor *t;
+		t = actors[i];
+		delete t;
+	}
+	for (int i = 0; !actors.empty(); i++)
+	{
+		actors.pop_back();
+	}*/
+
+	while (!actors.empty())
+	{
+		Actor *t = actors.back();
+		delete t;
+		actors.pop_back();
+	}
 }
 
 int StudentWorld::loadLevel()
 {
 	ostringstream levelNameToStore;
-	levelNameToStore << "level" << levelNumber << ".dat";
+	levelNameToStore << "level";
+	levelNameToStore.fill('0');
+	levelNameToStore << setw(2) << getLevel() << ".dat";
 	//	levelNumber++;
 	//
 	//	string	curLevel = levelNameToStore.str();
 	//	cout << curLevel;
 	//	Level	lev(assetDirectory());
 	//	Level::LoadResult result = lev.loadLevel(curLevel);
-	//	if (result == Level::load_fail_file_not_found ||
-	//		result == Level::load_fail_bad_format)
-	//		return -1;
-	std::string curLevel = "level00.dat";
-	/*Level	tempLev(assetDirectory());*/
-	/*this->lev = &tempLev;*/
+	std::string curLevel = levelNameToStore.str();
 	Level::LoadResult result = lev->loadLevel(curLevel);
 	if (result == Level::load_fail_file_not_found ||
 		result == Level::load_fail_bad_format)
@@ -94,10 +126,28 @@ int StudentWorld::loadLevel()
 			switch (item)		//DEVAN
 			{
 			case Level::player:
-				 currentPlayer = new Player(IID_PLAYER, x, y, this);  
+				currentPlayer = new Player(IID_PLAYER, x, y, this);  
 				break;
 			case Level::wall:
 				actors.push_back(new Wall(IID_WALL, x, y, this));
+				break;
+			case Level::jewel:
+				actors.push_back(new Jewel(IID_JEWEL, x, y, this));
+				break;
+			case Level::extra_life:
+				actors.push_back(new ExtraLife(IID_EXTRA_LIFE, x, y, this));
+				break;
+			case Level::restore_health:
+				actors.push_back(new RestoreHealth(IID_RESTORE_HEALTH, x, y, this));
+				break;
+			case Level::ammo:
+				actors.push_back(new Ammo(IID_AMMO, x, y, this));
+				break;
+			case Level::boulder:
+				actors.push_back(new Boulder(IID_BOULDER, x, y, this));
+				break;
+			case Level::hole:
+				actors.push_back(new Hole(IID_HOLE, x, y, this));
 				break;
 			}
 		}
@@ -105,9 +155,24 @@ int StudentWorld::loadLevel()
 	return 0;
 }
 
-Level* StudentWorld::getLevel() const
+Level* StudentWorld::getLevelPointer() const
 {
 	return lev;
 }
+Player* StudentWorld::returnCurrentPlayer()
+{
+	return currentPlayer;
+}
 
+Actor* StudentWorld::getActorsAtLoc(int x, int y)
+{
+	for (int i = 0; i < actors.size(); i++)
+	{
+		if ((actors[i]->getX() == x) && (actors[i]->getY() == y))
+		{
+			return actors[i];
+		}
+	}
+	return nullptr;
+}
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
