@@ -20,29 +20,17 @@ public:
 	}
 
 	virtual int init();
-	/*{
-		return GWSTATUS_CONTINUE_GAME;
-	}*/
-
 	virtual int move();
-	//{
-	//	  // This code is here merely to allow the game to build, run, and terminate after hitting enter a few times 
-	//	decLives();
-	//	return GWSTATUS_PLAYER_DIED;
-	//}
-
 	virtual void cleanUp();
-	//{
-	//}
 
+	Actor* getActorsAtLoc(int x, int y);
 	int loadLevel();
-	Level* getLevel() const;
-
+	Level* getLevelPointer() const;
+	Player* returnCurrentPlayer();
 private:
-	int levelNumber = 00;
+	//int levelNumber = 00;
 	std::vector<Actor*> actors; //DEVAN
-	Actor* currentPlayer = nullptr;  //CHECK
-	//Level* lev = nullptr;
+	Player* currentPlayer = nullptr;  //CHECK
 	Level*	lev = new Level(assetDirectory());
 };
 
