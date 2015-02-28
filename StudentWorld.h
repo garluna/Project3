@@ -23,15 +23,27 @@ public:
 	virtual int move();
 	virtual void cleanUp();
 
-	Actor* getActorsAtLoc(int x, int y);
+	Actor* getActorsAtLoc(int x, int y) const;
 	int loadLevel();
 	Level* getLevelPointer() const;
-	Player* returnCurrentPlayer();
+	Player* returnCurrentPlayer() const;
+	void setDisplayText();
+	int getCurrentScore() const;
+	int getCurrentGameLevel() const;
+	std::string format(int score, int lvl, int lives, int health, int ammo, int bonus);
+	int getJewelNum() const;
+	void decJewels();
+	//void changeExitUsed();
+	void setExitUsed(bool a);
+	void removeActor(Actor* a);
+	void addBullet(int x, int y, GraphObject::Direction dir);
 private:
-	//int levelNumber = 00;
 	std::vector<Actor*> actors; //DEVAN
 	Player* currentPlayer = nullptr;  //CHECK
 	Level*	lev = new Level(assetDirectory());
+	int bonus = 1000;
+	int numJewels;
+	bool exitUsed;
 };
 
 #endif // STUDENTWORLD_H_
