@@ -36,7 +36,13 @@ public:
 	//void changeExitUsed();
 	void setExitUsed(bool a);
 	void removeActor(Actor* a);
-	void addBullet(int x, int y, GraphObject::Direction dir);
+	void addBullet(int x, int y, GraphObject::Direction dir, bool fromPlayer);
+	/*void setHitPoints(int points);
+	void subtractHitPoints(int a);
+	int getHitPoints() const;
+	void setAmmo(int ammoToBe);
+	int getAmmo() const;*/
+	
 private:
 	std::vector<Actor*> actors; //DEVAN
 	Player* currentPlayer = nullptr;  //CHECK
@@ -44,6 +50,9 @@ private:
 	int bonus = 1000;
 	int numJewels;
 	bool exitUsed;
+
+	/*int playerHitPoints = 20;
+	int playerAmmo = 20;*/
 };
 
 #endif // STUDENTWORLD_H_
