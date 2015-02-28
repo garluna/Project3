@@ -5,6 +5,7 @@ using namespace std;
 #include "StudentWorld.h"
 
 #include "GameWorld.h"
+#include <cstdlib>
 
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
@@ -56,11 +57,6 @@ void Actor::damage(Actor* toHurt)
 	toHurt->subtractHitPoints(2);
 }
 
-void Actor::restore()
-{
-	hitPoints = 20;
-}
-
 //void Player::addHitPoints(int a)
 //{
 //	hitPoints += a;
@@ -85,16 +81,6 @@ void Actor::setHitPoints(int points)
 //{
 //	ammo += 20;
 //}
-
-void Actor::addAmmo(int a)
-{
-	ammo += a;
-}
-
-void Actor::subtractAmmo(int a)
-{
-	ammo -= a;
-}
 
 void Actor::setAmmo(int ammoToBe)
 {
@@ -122,6 +108,378 @@ void Extras::doSomething()
 		this->changeStats();
 		changeAlive();
 	}
+}
+
+Robot::Robot(int imgID, int x, int y, Direction dir, StudentWorld* world)
+	:Actor(imgID, x, y, world)
+{
+	setDirection(dir);
+	int ticks = (28 - getWorld()->getLevel()) / 4; 
+	if (ticks < 3)
+		ticks = 3;
+	maxTick = ticks;
+}
+
+Robot::~Robot()
+{
+}
+
+void Robot::doSomething()
+{
+	StudentWorld* tempWorld = getWorld();
+	if (isCurrentTickGood())
+	{
+		Direction dir;
+		dir = getDirection();
+		if (playerInSight(this->getX(), this->getY(), tempWorld->returnCurrentPlayer()->getX(), tempWorld->returnCurrentPlayer()->getY(), dir))
+		{
+			getWorld()->playSound(SOUND_ENEMY_FIRE);
+			tempWorld->addBullet(getX(), getY(), dir, false);
+		}
+		else
+		{
+			if (!moveToNextPossible(getDirection()))
+			{
+				Direction dir = getDirection();
+				switch (dir)
+				{
+				case down:
+					setDirection(up);
+					break;
+				case up:
+					setDirection(down);
+					break;
+				case left:
+					setDirection(right);
+					break;
+				case right:
+					setDirection(left);
+					break;
+				}
+			}
+		}
+	}
+}
+
+bool Robot::isCurrentTickGood()
+{
+	if (currentTick != maxTick)
+	{
+		increaseTick();
+		return false;
+	}
+	else
+	{
+		currentTick = 0;
+		return true;
+	}
+}
+
+void Robot::increaseTick()
+{
+	currentTick++;
+}
+
+bool Robot::playerInSight(int x, int y, int playerX, int playerY, Direction dir) //CHECK make const dir
+{
+	StudentWorld* tempWorld = getWorld();
+	int dirX, dirY;
+	int xdif = playerX - x;
+	int ydif = playerY - y;
+	//cerr << xdif << " " << ydif << endl;
+	if (xdif != 0 && ydif != 0)
+	{
+		return false;
+	}
+	if (xdif < 0 && dir != left)
+	{
+		return false;
+	}
+	else
+		{
+			for (int tempX = playerX + 1; tempX < x; tempX++)
+			{
+				Actor* temp = tempWorld->getActorsAtLoc(tempX, y);
+				Wall* temp2 = dynamic_cast<Wall*> (temp);
+				if (temp2 != nullptr)
+				{
+					return false;
+				}
+				Robot* temp3 = dynamic_cast<Robot*> (temp);
+				if (temp3 != nullptr && temp3 != this)
+				{
+					return false;
+				}
+				Boulder* temp4 = dynamic_cast<Boulder*> (temp);
+				if (temp4 != nullptr)
+				{
+					return false;
+				}
+				//Factory* temp5 = dynamic_cast<Factory*> (temp);
+				//if (temp5 != nullptr)
+				//{
+				//	return false;
+				//}
+			}
+			//return true;
+	}
+	if (xdif > 0 && dir != right)
+	{
+		return false;
+	}
+	else
+	{ 
+		for (int tempX = x + 1; tempX < playerX; tempX++)
+			{
+				Actor* temp = tempWorld->getActorsAtLoc(tempX, y);
+				Wall* temp2 = dynamic_cast<Wall*> (temp);
+				if (temp2 != nullptr)
+				{
+					return false;
+				}
+				Robot* temp3 = dynamic_cast<Robot*> (temp);
+				if (temp3 != nullptr && temp3 != this)
+				{
+					return false;
+				}
+				Boulder* temp4 = dynamic_cast<Boulder*> (temp);
+				if (temp4 != nullptr)
+				{
+					return false;
+				}
+				//Factory* temp5 = dynamic_cast<Factory*> (temp);
+				//if (temp5 != nullptr)
+				//{
+				//	return false;
+				//}
+			}
+			//return true;
+	}
+	if (ydif < 0 && dir != down) 
+	{
+		return false;
+	}
+	else 
+	{
+			for (int tempY = playerY + 1; tempY < y; tempY++)
+			{
+				Actor* temp = tempWorld->getActorsAtLoc(x, tempY);
+				Wall* temp2 = dynamic_cast<Wall*> (temp);
+				if (temp2 != nullptr)
+				{
+					return false;
+				}
+				Robot* temp3 = dynamic_cast<Robot*> (temp);
+				if (temp3 != nullptr && temp3 != this)
+				{
+					return false;
+				}
+				Boulder* temp4 = dynamic_cast<Boulder*> (temp);
+				if (temp4 != nullptr)
+				{
+					return false;
+				}
+				//Factory* temp5 = dynamic_cast<Factory*> (temp);
+				//if (temp5 != nullptr)
+				//{
+				//	return false;
+				//}
+			}
+		//	return true;
+	}
+	if (ydif > 0 && dir != up)
+	{
+		return false;
+	}
+	else
+	{
+			for (int tempY = y + 1; tempY < playerY; tempY++)
+			{
+				Actor* temp = tempWorld->getActorsAtLoc(x, tempY);
+				Wall* temp2 = dynamic_cast<Wall*> (temp);
+				if (temp2 != nullptr)
+				{
+					return false;
+				}
+				Robot* temp3 = dynamic_cast<Robot*> (temp);
+				if (temp3 != nullptr && temp3 != this)
+				{
+					return false;
+				}
+				Boulder* temp4 = dynamic_cast<Boulder*> (temp);
+				if (temp4 != nullptr)
+				{
+					return false;
+				}
+				//Factory* temp5 = dynamic_cast<Factory*> (temp);
+				//if (temp5 != nullptr)
+				//{
+				//	return false;
+				//}
+			}
+		//	return true;
+		}
+	return true;
+	}
+	//switch (dir)
+	//{
+	//case down:
+	//	dirX = 0;
+	//	dirY = -1;
+	//	break;
+	//case up:
+	//	dirX = 1;
+	//	dirY = 0;
+	//	break;
+	//case left:
+	//	dirX = -1;
+	//	dirY = 0;
+	//	break;
+	//case right:
+	//	dirX = 0;
+	//	dirY = 1;
+	//	break;
+	//}
+	//for (int robotX = x, robotY = y; robotX != playerX && robotY != playerY; robotX += dirX, robotY += dirY)
+	//{
+	//	//cerr << robotX << " " << robotY << " " << endl;
+	//	//tempWorld->getActorsAtLoc(robotX, robotY);
+	//	Actor* temp = tempWorld->getActorsAtLoc(robotX, robotY);
+	//	Player* temp5 = dynamic_cast<Player*> (temp);
+	//	if (temp5 != nullptr)
+	//	{
+	//		return true;
+	//	}
+	//	Wall* temp2 = dynamic_cast<Wall*> (temp);
+	//	if (temp2 != nullptr)
+	//	{
+	//		return false;
+	//	}
+	//	Robot* temp3 = dynamic_cast<Robot*> (temp);
+	//	if (temp3 != nullptr)
+	//	{
+	//		return false;
+	//	}
+	//	Boulder* temp4 = dynamic_cast<Boulder*> (temp);
+	//	if (temp4 != nullptr)
+	//	{
+	//		return false;
+	//	}
+	//	//Factory* temp5 = dynamic_cast<Factory*> (temp);
+	//	//if (temp5 != nullptr)
+	//	//{
+	//	//	return false;
+	//	//}
+	//}
+	//return true;
+
+bool Robot::moveToNextPossible(Direction dir)
+{
+	StudentWorld* tempWorld = getWorld();
+	switch (dir)
+	{
+	case down:
+	{
+		Actor* temp = tempWorld->getActorsAtLoc(getX(), getY() - 1);
+		if (temp == nullptr)
+		{
+			moveTo(getX(), getY() - 1);
+			return true;
+		}
+		else
+		{
+			Extras* temp1 = dynamic_cast<Extras*> (temp);
+			if (temp1 != nullptr)
+			{
+				moveTo(getX(), getY() - 1);
+				return true;
+			}
+			Hole* temp2 = dynamic_cast<Hole*> (temp);
+			if (temp2 != nullptr)
+			{
+				moveTo(getX(), getY() - 1);
+				return true;
+			}
+		}
+		break;
+	}
+	case up:
+	{
+		Actor* temp = tempWorld->getActorsAtLoc(getX(), getY() + 1);
+		if (temp == nullptr)
+		{
+			moveTo(getX(), getY() + 1);
+			return true;
+		}
+		else
+		{
+			Extras* temp1 = dynamic_cast<Extras*> (temp);
+			if (temp1 != nullptr)
+			{
+				moveTo(getX(), getY() + 1);
+				return true;
+			}
+			Hole* temp2 = dynamic_cast<Hole*> (temp);
+			if (temp2 != nullptr)
+			{
+				moveTo(getX(), getY() + 1);
+				return true;
+			}
+		}
+		break;
+	}
+	case left:
+	{
+		Actor* temp = tempWorld->getActorsAtLoc(getX() - 1, getY());
+		if (temp == nullptr)
+		{
+			moveTo(getX() - 1, getY());
+			return true;
+		}
+		else
+		{
+			Extras* temp1 = dynamic_cast<Extras*> (temp);
+			if (temp1 != nullptr)
+			{
+				moveTo(getX() - 1, getY());
+				return true;
+			}
+			Hole* temp2 = dynamic_cast<Hole*> (temp);
+			if (temp2 != nullptr)
+			{
+				moveTo(getX() - 1, getY());
+				return true;
+			}
+		}
+		break;
+	}
+	case right:
+	{
+		Actor* temp = tempWorld->getActorsAtLoc(getX() + 1, getY());
+		if (temp == nullptr)
+		{
+			moveTo(getX() + 1, getY());
+			return true;
+		}
+		else
+		{
+			Extras* temp1 = dynamic_cast<Extras*> (temp);
+			if (temp1 != nullptr)
+			{
+				moveTo(getX() + 1, getY());
+				return true;
+			}
+			Hole* temp2 = dynamic_cast<Hole*> (temp);
+			if (temp2 != nullptr)
+			{
+				moveTo(getX() + 1, getY());
+				return true;
+			}
+		}
+		break;
+	}
+	}
+	return false;
 }
 
 Wall::Wall(int imgID, int x, int y, StudentWorld* world)
@@ -192,6 +550,11 @@ void Player::doSomething()
 					{
 						break;
 					}
+					Robot* temp3 = dynamic_cast<Robot*> (temp);
+					if (temp3 != nullptr)
+					{
+						break;
+					}
 					Wall* temp4 = dynamic_cast<Wall*> (temp);
 					if (temp4 == nullptr)
 					{
@@ -238,13 +601,18 @@ void Player::doSomething()
 						else
 							break;
 					}
-					Hole* temp3 = dynamic_cast<Hole*> (temp);
+					Hole* temp2 = dynamic_cast<Hole*> (temp);
+					if (temp2 != nullptr)
+					{
+						break;
+					}
+					Robot* temp3 = dynamic_cast<Robot*> (temp);
 					if (temp3 != nullptr)
 					{
 						break;
 					}
-					Wall* temp2 = dynamic_cast<Wall*> (temp);
-					if (temp2 == nullptr)
+					Wall* temp4 = dynamic_cast<Wall*> (temp);
+					if (temp4 == nullptr)
 					{
 						moveTo(getX() - 1, getY());
 					}
@@ -276,13 +644,18 @@ void Player::doSomething()
 						else
 							break;
 					}
-					Hole* temp3 = dynamic_cast<Hole*> (temp);
+					Hole* temp2 = dynamic_cast<Hole*> (temp);
+					if (temp2 != nullptr)
+					{
+						break;
+					}
+					Robot* temp3 = dynamic_cast<Robot*> (temp);
 					if (temp3 != nullptr)
 					{
 						break;
 					}
-					Wall* temp2 = dynamic_cast<Wall*> (temp);
-					if (temp2 == nullptr)
+					Wall* temp4 = dynamic_cast<Wall*> (temp);
+					if (temp4 == nullptr)
 					{
 						moveTo(getX() + 1, getY());
 					}
@@ -319,13 +692,18 @@ void Player::doSomething()
 						else
 							break;
 					}
-					Hole* temp3 = dynamic_cast<Hole*> (temp);
+					Hole* temp2 = dynamic_cast<Hole*> (temp);
+					if (temp2 != nullptr)
+					{
+						break;
+					}
+					Robot* temp3 = dynamic_cast<Robot*> (temp);
 					if (temp3 != nullptr)
 					{
 						break;
 					}
-					Wall* temp2 = dynamic_cast<Wall*> (temp);
-					if (temp2 == nullptr)
+					Wall* temp4 = dynamic_cast<Wall*> (temp);
+					if (temp4 == nullptr)
 					{
 						moveTo(getX(), getY() + 1);
 					}
@@ -370,11 +748,26 @@ void Player::doSomething()
 						y = getY() + 1;
 						break;
 					}*/
-					tempWorld->addBullet(getX(), getY(), dir);
+					tempWorld->addBullet(getX(), getY(), dir, true);
 				}
 			}
 		}
 	}
+}
+
+void Player::restore()
+{
+	setHitPoints(20);
+}
+
+void Player::addAmmo(int a)
+{
+	setAmmo(getAmmo() + a);
+}
+
+void Player::subtractAmmo(int a)
+{
+	setAmmo(getAmmo() -a);
 }
 
 Jewel::Jewel(int imgID, int x, int y, StudentWorld* world)
@@ -558,10 +951,11 @@ void Exit::doSomething()
 	}
 }
 
-Bullet::Bullet(int imgID, int x, int y, Direction dir, StudentWorld* world)
+Bullet::Bullet(int imgID, int x, int y, Direction dir, StudentWorld* world, bool fromPlayer)
 	:Actor(imgID, x, y, world)
 {
 	setDirection(dir);
+	comesFromPlayer = fromPlayer;
 }
 
 Bullet::~Bullet()
@@ -591,6 +985,19 @@ void Bullet::doSomething()
 					{
 						temp1->changeAlive();
 					}
+					else
+					{
+						Robot* temp2 = dynamic_cast<Robot*> (temp1);
+						if (temp2 != nullptr)
+						{
+							getWorld()->playSound(SOUND_ROBOT_IMPACT);   //COME BACK TO THIS
+						}
+						Player* temp3 = dynamic_cast<Player*> (temp1);
+						if (temp3 != nullptr)
+						{
+							getWorld()->playSound(SOUND_PLAYER_IMPACT);   //COME BACK TO THIS
+						}
+					}
 				}
 				changeAlive();
 			}
@@ -609,10 +1016,23 @@ void Bullet::doSomething()
 				if (temp->getHitPoints() != 0)
 				{
 					damage(temp);
-					cerr << temp->getHitPoints();
+					//cerr << temp->getHitPoints();
 					if (temp->getHitPoints() == 0)
 					{
 						temp->changeAlive();
+					}
+					else
+					{
+						Robot* temp2 = dynamic_cast<Robot*> (temp);
+						if (temp2 != nullptr)
+						{
+							getWorld()->playSound(SOUND_ROBOT_IMPACT);   //COME BACK TO THIS
+						}
+						Player* temp3 = dynamic_cast<Player*> (temp);
+						if (temp3 != nullptr)
+						{
+							getWorld()->playSound(SOUND_PLAYER_IMPACT);   //COME BACK TO THIS
+						}
 					}
 				}
 				changeAlive();
@@ -632,10 +1052,22 @@ void Bullet::doSomething()
 				if (temp->getHitPoints() != 0)
 				{
 					damage(temp);
-					cerr << temp->getHitPoints();
+				//	cerr << temp->getHitPoints();
 					if (temp->getHitPoints() == 0)
 					{
 						temp->changeAlive();
+					}
+					else
+					{
+						Robot* temp2 = dynamic_cast<Robot*> (temp);
+						if (temp2 != nullptr)
+						{
+							getWorld()->playSound(SOUND_ROBOT_IMPACT);   //COME BACK TO THIS
+						}Player* temp3 = dynamic_cast<Player*> (temp);
+						if (temp3 != nullptr)
+						{
+							getWorld()->playSound(SOUND_PLAYER_IMPACT);   //COME BACK TO THIS
+						}
 					}
 				}
 				changeAlive();
@@ -655,10 +1087,23 @@ void Bullet::doSomething()
 				if (temp->getHitPoints() != 0)
 				{
 					damage(temp);
-					cerr << temp->getHitPoints();
+					//cerr << temp->getHitPoints();
 					if (temp->getHitPoints() == 0)
 					{
 						temp->changeAlive();
+					}
+					else
+					{
+						Robot* temp2 = dynamic_cast<Robot*> (temp);
+						if (temp2 != nullptr)
+						{
+							getWorld()->playSound(SOUND_ROBOT_IMPACT);   //COME BACK TO THIS
+						}
+						Player* temp3 = dynamic_cast<Player*> (temp);
+						if (temp3 != nullptr)
+						{
+							getWorld()->playSound(SOUND_PLAYER_IMPACT);   //COME BACK TO THIS
+						}
 					}
 				}
 				changeAlive();
@@ -667,3 +1112,38 @@ void Bullet::doSomething()
 		}
 	}
 }
+
+bool Bullet::reutrnsComesFromPlayer()
+{
+	if (comesFromPlayer = true)
+	{
+		return true;
+	}
+	else
+		return false;
+}
+
+SnarlBot::SnarlBot(int imgID, int x, int y, Direction dir, StudentWorld* world)
+	:Robot(imgID, x, y, dir, world)
+{
+	setHitPoints(10);
+}
+
+SnarlBot::~SnarlBot()
+{
+	getWorld()->playSound(SOUND_ROBOT_DIE);
+	getWorld()->increaseScore(100);
+}
+
+KleptoBot::KleptoBot(int imgID, int x, int y, Direction dir, StudentWorld* world)
+	:Robot(imgID, x, y, dir, world)
+{
+	setHitPoints(5);
+	distanceBeforeTurning = rand() % 6;
+
+}
+KleptoBot::~KleptoBot()
+{}
+
+
+
