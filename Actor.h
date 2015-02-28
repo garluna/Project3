@@ -18,15 +18,13 @@ public:
 	virtual bool changeAlive();
 	void setAlive(bool a);
 	virtual void damage(Actor* toHurt);  //CHECK
-	void restore();
-	void subtractHitPoints(int a);
-	int getHitPoints() const;
-	void setHitPoints(int points);
+	//void restore();
+	virtual void subtractHitPoints(int a);
+	virtual int getHitPoints() const;
+	virtual void setHitPoints(int points);
 	//void addAmmo();
-	void addAmmo(int a);
-	void subtractAmmo(int a);
-	void setAmmo(int ammoToBe);
-	int getAmmo() const;
+	virtual void setAmmo(int ammoToBe);
+	virtual int getAmmo() const;
 private:
 	StudentWorld* myWorld;
 	bool alive = true;
@@ -43,6 +41,22 @@ public:
 	virtual void doSomething();
 	virtual void changeStats() = 0;
 private:
+};
+
+class Robot
+	:public Actor
+{
+public:
+	Robot(int imgID, int x, int y, Direction dir, StudentWorld* world);
+	~Robot();
+	virtual void doSomething();
+	bool isCurrentTickGood();
+	void increaseTick();
+	bool playerInSight(int x, int y, int playerX, int playerY, Direction dir);
+	bool moveToNextPossible(Direction dir);
+private:
+	int maxTick;
+	int currentTick;
 };
 
 class Wall
@@ -62,10 +76,18 @@ public:
 	Player(int imgID, int x, int y, StudentWorld* world);
 	virtual ~Player();
 	virtual void doSomething();
-	//void addHitPoints(int a);
+	void restore();
+	void addAmmo(int a);
+	void subtractAmmo(int a);
+	void addHitPoints(int a);
+	/*virtual void subtractHitPoints(int a);
+	virtual int getHitPoints() const;
+	virtual void setHitPoints(int points);
+	virtual void setAmmo(int ammoToBe);
+	virtual int getAmmo() const;*/
 private:
-	//int hitPoints = 20;
-	//int ammo = 20;
+	int hitPoints = 20;
+	int ammo = 20;
 };
 
 class Jewel
@@ -138,9 +160,32 @@ class Bullet
 	:public Actor
 {
 public:
-	Bullet(int imgID, int x, int y, Direction dir, StudentWorld* world);
+	Bullet(int imgID, int x, int y, Direction dir, StudentWorld* world, bool fromPlayer);
 	~Bullet();
 	virtual void doSomething();
+	bool reutrnsComesFromPlayer();
+private:
+	bool comesFromPlayer = true;
 };
 
+class SnarlBot
+	:public Robot
+{
+public:
+	SnarlBot(int imgID, int x, int y, Direction dir, StudentWorld* world);
+	~SnarlBot();
+	//virtual bool changeAlive();
+	//virtual void doSomething();
+};
+
+class KleptoBot
+	:public Robot
+{
+public:
+	KleptoBot(int imgID, int x, int y, Direction dir, StudentWorld* world);
+	~KleptoBot();
+	virtual void doSomething() = 0;
+private:
+	int distanceBeforeTurning;
+};
 #endif // ACTOR_H_
