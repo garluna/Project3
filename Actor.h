@@ -16,9 +16,22 @@ public:
 	StudentWorld* getWorld() const;
 	virtual bool isAlive() const;
 	virtual bool changeAlive();
+	void setAlive(bool a);
+	virtual void damage(Actor* toHurt);  //CHECK
+	void restore();
+	void subtractHitPoints(int a);
+	int getHitPoints() const;
+	void setHitPoints(int points);
+	//void addAmmo();
+	void addAmmo(int a);
+	void subtractAmmo(int a);
+	void setAmmo(int ammoToBe);
+	int getAmmo() const;
 private:
 	StudentWorld* myWorld;
 	bool alive = true;
+	int hitPoints = 0;
+	int ammo = 0;
 };
 
 class Extras 
@@ -50,14 +63,9 @@ public:
 	virtual ~Player();
 	virtual void doSomething();
 	//void addHitPoints(int a);
-	void restore();
-	void subtractHitPoints(int a);
-	void restoreAmmo();
-	void addAmmo(int a);
-	void subtractAmmo(int a);
 private:
-	int hitPoints = 20;
-	int ammo = 20;
+	//int hitPoints = 20;
+	//int ammo = 20;
 };
 
 class Jewel
@@ -104,6 +112,7 @@ public:
 	virtual ~Boulder();
 	virtual void doSomething();
 	virtual bool boulderMovePossible(int x, int y);
+	virtual bool changeAlive();
 };
 
 class Hole
@@ -112,6 +121,25 @@ class Hole
 public:
 	Hole(int imgID, int x, int y, StudentWorld* world);
 	virtual ~Hole();
+	virtual void doSomething();
+	virtual bool changeAlive();
+};
+
+class Exit
+	:public Actor
+{
+public:
+	Exit(int imgID, int x, int y, StudentWorld* world);
+	virtual ~Exit();
+	virtual void doSomething();
+};
+
+class Bullet
+	:public Actor
+{
+public:
+	Bullet(int imgID, int x, int y, Direction dir, StudentWorld* world);
+	~Bullet();
 	virtual void doSomething();
 };
 
