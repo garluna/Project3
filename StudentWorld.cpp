@@ -182,6 +182,12 @@ int StudentWorld::loadLevel()
 			case Level::exit:
 				actors.push_back(new Exit(IID_EXIT, x, y, this));
 				break;
+			case Level::horiz_snarlbot:
+				actors.push_back(new SnarlBot(IID_SNARLBOT, x, y, GraphObject::Direction::right, this));
+				break;
+			case Level::vert_snarlbot:
+				actors.push_back(new SnarlBot(IID_SNARLBOT, x, y, GraphObject::Direction::down, this));
+				break;
 			}
 		}
 	}
@@ -227,6 +233,10 @@ Actor* StudentWorld::getActorsAtLoc(int x, int y) const
 		{
 			return actors[i];
 		}
+	}
+	if (currentPlayer->getX() == x && currentPlayer->getY() == y)
+	{
+		return currentPlayer;
 	}
 	return nullptr;
 }
@@ -305,9 +315,32 @@ void StudentWorld::setExitUsed(bool a)
 	exitUsed = a;
 }
 
-void StudentWorld::addBullet(int x, int y, GraphObject::Direction dir)
+void StudentWorld::addBullet(int x, int y, GraphObject::Direction dir, bool fromActor)
 {
-	actors.push_back(new Bullet(IID_BULLET, x, y, dir, this));
+	actors.push_back(new Bullet(IID_BULLET, x, y, dir, this, fromActor));
 }
 
+//void StudentWorld::setHitPoints(int points)
+//{
+//	playerHitPoints = points;
+//}
+//
+//void StudentWorld::subtractHitPoints(int a)
+//{
+//	playerHitPoints -= a;
+//}
+//
+//int StudentWorld::getHitPoints() const
+//{
+//	return playerHitPoints;
+//}
+//
+//void StudentWorld::setAmmo(int ammoToBe)
+//{
+//	playerAmmo = ammoToBe;
+//}
+//int StudentWorld::getAmmo() const
+//{
+//	return playerAmmo;
+//}
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
